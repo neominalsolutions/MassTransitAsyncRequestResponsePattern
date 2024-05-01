@@ -1,11 +1,8 @@
-﻿
-using Contracts.Orders;
-using Contracts.Products;
+﻿using Contracts.Orders.GetOrderById;
 using MassTransit;
 using MassTransit.Clients;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ReportingAPI.Dtos;
 
 namespace ReportingAPI.Controllers
 {
@@ -14,13 +11,13 @@ namespace ReportingAPI.Controllers
   public class OrdersController : ControllerBase
   {
 
-    private readonly IRequestClient<GetOrderRequest> orderApiClient;
-    private readonly IRequestClient<GetOrderedProductsRequest> productApiClient;
+    // IRequestClient interface ile Request atılacak olan contract için bir tanımlama yapılır.
+    private readonly IRequestClient<GetOrderByIdRequest> orderApiClient;
 
-    public OrdersController(IRequestClient<GetOrderRequest> orderApiClient, IRequestClient<GetOrderedProductsRequest> productApiClient)
+
+    public OrdersController(IRequestClient<GetOrderByIdRequest> orderApiClient)
     {
       this.orderApiClient = orderApiClient;
-      this.productApiClient = productApiClient;
     }
 
 
@@ -28,41 +25,20 @@ namespace ReportingAPI.Controllers
     public async Task<IActionResult> GetOrderedProducts(Guid orderId)
     {
 
-      var response = new OrderedProductsDto();
+      var request = new GetOrderByIdRequest { OrderId = orderId };
 
-      var orderResponse = await this.orderApiClient.GetResponse<GetOrderSuccessResponse, OrderNotFoundResponse>(new GetOrderRequest
+      // async responselar success yada fail dönebilir
+      // Her bir async request için success ve error response nesneleri tanımlanmalıdır. 
+      var orderResponse = await this.orderApiClient.GetResponse<GetOrderByIdSuccessResponse, GetOrderByIdErrorResponse>(request);
+
+
+      if(orderResponse.Is(out Response<GetOrderByIdErrorResponse> errorRes))
       {
-        OrderId = orderId
-      });
-
-      if(orderResponse.Is(out Response<OrderNotFoundResponse> res))
-      {
-        return StatusCode(500, res.Message);
-      }
-      else if(orderResponse.Is(out Response<GetOrderSuccessResponse> res1))
-      {
-        var productIds = res1.Message.OrderItems.Select(x => x.ProductId).ToList();
-
-        var productResponse = await this.productApiClient.GetResponse<GetOrderedProductsResponse>(new GetOrderedProductsRequest
-        {
-          ProductIds = productIds.ToArray()
-        });
-
-
-
-        response.OrderId = orderId;
-        response.OrderDate = res1.Message.OrderDate;
-        response.Products = res1.Message.OrderItems.Select(a => new OrderedProductDto
-        {
-          ProductName = productResponse.Message.Products.FirstOrDefault(x => x.ProductId == a.ProductId).ProductName,
-          ListPrice = res1.Message.OrderItems.FirstOrDefault(x => x.ProductId == a.ProductId).ListPrice
-        }).ToList();
-  
+        return StatusCode(500, errorRes.Message);
       }
 
-      return Ok(response);
-
-
+      return Ok(orderResponse.Message);
+      
     }
   }
 }

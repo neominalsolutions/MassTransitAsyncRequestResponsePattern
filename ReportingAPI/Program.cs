@@ -1,6 +1,6 @@
 
 using Contracts.Orders;
-using Contracts.Products;
+using Contracts.Orders.GetOrderById;
 using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,8 +16,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMassTransit(cfg =>
 {
 
-  cfg.AddRequestClient<GetOrderedProductsRequest>(new Uri("exchange:get-ordered-products"));
-  cfg.AddRequestClient<GetOrderRequest>(new Uri("exchange:get-order"));
+  // Request gönderip Async olarak Response alabilmek için AddRequestClient tanýmý yapýlýr.
+  // Hangi request için bir client olduðu açýkça yazýlýr.
+  cfg.AddRequestClient<GetOrderByIdRequest>(new Uri("exchange:get-order-by-id"));
 
   cfg.UsingRabbitMq((context, cfg) =>
   {

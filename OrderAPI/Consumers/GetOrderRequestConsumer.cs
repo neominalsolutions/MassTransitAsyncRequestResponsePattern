@@ -1,35 +1,36 @@
 ﻿using Contracts.Orders;
+using Contracts.Orders.GetOrderById;
 using MassTransit;
 
 namespace OrderAPI.Consumers
 {
-    public class GetOrderRequestConsumer : IConsumer<GetOrderRequest>
+    public class GetOrderRequestConsumer : IConsumer<GetOrderByIdRequest>
   {
-    public async Task Consume(ConsumeContext<GetOrderRequest> context)
+    public async Task Consume(ConsumeContext<GetOrderByIdRequest> context)
     {
 
       if(context.Message.OrderId != new Guid("9a967ee1-d1e0-4c05-afae-d01bd9aa507a"))
       {
-        await context.RespondAsync(new OrderNotFoundResponse());
+        await context.RespondAsync(new GetOrderByIdErrorResponse());
       }
 
 
-      await context.RespondAsync(new GetOrderSuccessResponse
+      await context.RespondAsync(new GetOrderByIdSuccessResponse
       {
         OrderId = context.Message.OrderId,
         OrderDate = DateTime.Now,
-        OrderItems = new List<OrderItemView>
+        OrderItems = new List<OrderItem>
         {
-          new OrderItemView
+          new OrderItem
           {
             ListPrice = 10,
-            ProductId = new Guid("5cd816e8-4a27-45b8-8bb2-e5d846844629"),
+            ProductId = Guid.NewGuid(),
             Quantity = 3
           },
-           new OrderItemView
+           new OrderItem
           {
             ListPrice = 100,
-            ProductId = new Guid("a805e23e-c6e1-4712-9e27-104605aa9bf3"),
+            ProductId = Guid.NewGuid(),
             Quantity = 2
           }
         }

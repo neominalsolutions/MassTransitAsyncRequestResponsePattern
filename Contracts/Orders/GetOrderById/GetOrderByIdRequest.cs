@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Products
+namespace Contracts.Orders.GetOrderById
 {
-    public class GetOrderedProductsRequest
-  {
-        public Guid[] ProductIds { get; set; }
+    public class GetOrderByIdRequest
+    {
+        public Guid OrderId { get; set; }
 
     }
 }

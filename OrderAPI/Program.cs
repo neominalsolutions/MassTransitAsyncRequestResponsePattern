@@ -1,3 +1,4 @@
+using Contracts.Orders.GetOrderById;
 using MassTransit;
 using OrderAPI.Consumers;
 
@@ -13,7 +14,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMassTransit(cfg =>
 {
 
-  cfg.AddConsumer<GetOrderRequestConsumer>().Endpoint(e=> e.Name = "get-order");
+  //cfg.AddRequestClient<GetOrderByIdRequest>(new Uri("exchange:get-order-by-id"));
+
+  // AddConsumer daki endpoint ile AddRequestClient daki endpoint Name ayný olmak zorundadýr.
+  // isteðin atýldýðý yere isteði iþleyebilecek bir request consumer eklenir.
+  cfg.AddConsumer<GetOrderRequestConsumer>().Endpoint(e=> e.Name = "get-order-by-id");
 
 
   cfg.UsingRabbitMq((context, cfg) =>
